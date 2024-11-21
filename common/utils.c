@@ -10,6 +10,7 @@
 #include <sys/ioctl.h>
 #include <linux/rtc.h>
 #include "utils.h"
+#include "report.h"
 
 VOID sys_bubble_sort(INT arr[], INT len)
 {
@@ -22,3 +23,4 @@ VOID sys_bubble_sort(INT arr[], INT len)
                 arr[j + 1] = temp;
             }
 }
+

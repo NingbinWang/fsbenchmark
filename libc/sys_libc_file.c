@@ -43,10 +43,13 @@ VOID fopen_bench(REPORT_LIBCAPI_T* info)
         len=MAX_FOPEN;
     else
         len=fopen_count;
+    if(len < 2)
+      return;
     for(i = 0;i < len;i++)
     {
         sum += fopen_time[i];
     }
+
     sys_bubble_sort(fopen_time,len);
     info->min = fopen_time[0];
     info->max = fopen_time[len-1];
@@ -82,7 +85,7 @@ INT sys_libc_fclose(FILE_ID *pFileID)
         return ERROR;
     }
     fclose_time[fclose_count++]=(INT)(end-start);
-    if(fclose_count > MAX_FCLOSE)
+    if(fclose_count == MAX_FCLOSE)
     {
         fclose_flag = 1;
         fclose_count = 0;
@@ -99,7 +102,8 @@ VOID fclose_bench(REPORT_LIBCAPI_T* info)
         len=MAX_FCLOSE;
     else
         len=fclose_count;
-   
+    if(len < 2)
+      return;
     for(i = 0;i < len;i++)
     {
         sum += fclose_time[i];
@@ -149,17 +153,18 @@ INT sys_libc_fread(FILE_ID *pFileID, VOID *pBuffer, UINT uSize, UINT uCount)
         printf("file invaild param :%p :%p :%d \n",pFileID,pBuffer,(uSize * uCount));
         return ERROR;
     }
-     sys_time_get_msec(&start);
+    sys_time_get_msec(&start);
     uReadCount = fread(pBuffer, uSize, uCount, (FILE *)pFileID);
-     sys_time_get_msec(&end);
-    if (uReadCount == uCount)
+    sys_time_get_msec(&end);
+    fread_time[fread_count++]=(INT)(end-start);
+    if(fread_count == MAX_FREAD)
     {
-         fread_time[fread_count++]=(INT)(end-start);
-         if(fread_count > MAX_FREAD)
-         {
            fread_flag = 1;
            fread_count = 0;
-         }
+    }
+    if (uReadCount == uCount)
+    {
+        
         return uReadCount;
     }
     if (sys_file_feof(pFileID) > 0)
@@ -178,11 +183,13 @@ VOID fread_bench(REPORT_LIBCAPI_T* info)
         len=MAX_FREAD;
     else
         len=fread_count;
+    if(len < 2)
+      return;
     for(i = 0;i < len;i++)
     {
         sum += fread_time[i];
     }
-     sys_bubble_sort(fread_time,len);
+    sys_bubble_sort(fread_time,len);
     info->min = fread_time[0];
     info->max = fread_time[len-1];
     info->avg = sum/len;
@@ -234,6 +241,8 @@ VOID fwrite_bench(REPORT_LIBCAPI_T* info)
         len=MAX_FWRITE;
     else
         len=fwrite_count;
+    if(len < 2)
+      return;
     for(i = 0;i < len;i++)
     {
         sum += fwrite_time[i];
@@ -304,6 +313,8 @@ VOID fsync_bench(REPORT_SYNC_T* info)
         len=MAX_FSYNC;
     else
         len=fsync_count;
+    if(len < 2)
+      return;
     for(i = 0;i < len;i++)
     {
         sum += fflush_time[i];
@@ -344,7 +355,7 @@ VOID fsync_bench(REPORT_SYNC_T* info)
  * @param[in]  iStartPos 设定从文件的哪里开始偏移,可能取值为：SEEK_CUR、 SEEK_END 或 SEEK_SET
  * @return     成功返回 0 错误返回 其他, 参考ERROR_CODE_E, 支持通过get_last_errno获取错误码
  */
-INT sys_file_fseek(FILE_ID *pFileID, LONG lOffset, INT iStartPos)
+INT sys_libc_fseek(FILE_ID *pFileID, LONG lOffset, INT iStartPos)
 {
     INT iRet = ERROR;
     if (NULL == pFileID)
@@ -364,7 +375,7 @@ INT sys_file_fseek(FILE_ID *pFileID, LONG lOffset, INT iStartPos)
  * @param[in]  pFileID  文件句柄
  * @return     成功返回 偏移值 错误返回 ERROR, 支持通过get_last_errno获取错误码
  */
-LONG sys_file_ftell(FILE_ID *pFileID)
+LONG sys_libc_ftell(FILE_ID *pFileID)
 {
     INT iRet = ERROR;
 
@@ -434,7 +445,8 @@ VOID fstat_bench(REPORT_LIBCAPI_T* info)
         len=MAX_FSTAT;
     else
         len=fstat_count;
-   
+    if(len < 2)
+      return;
     for(i = 0;i < len;i++)
     {
         sum += fstat_time[i];
@@ -515,7 +527,7 @@ INT sys_file_read_dir_file(const CHAR *strDir, VOID *pUserParam, ReadFileCallBac
     }
     sys_time_get_msec(&start);
     pDir = opendir(strDir);
-     sys_time_get_msec(&end);
+    sys_time_get_msec(&end);
     if(pDir == NULL)
     {
         printf("open dir: %s failed.\n",strDir);
@@ -571,4 +583,151 @@ INT sys_file_fgetpos(FILE_ID *pFileID, LONG *plOffset)
     }
 #endif
     return iRet;
+}
+
+/*
+typedef struct
+{   
+    REPORT_LIBCAPI_T          fopen_report;
+    REPORT_LIBCAPI_T          fclose_report;
+    REPORT_LIBCAPI_T          fread_report;
+    REPORT_LIBCAPI_T          fwrite_report;
+    REPORT_SYNC_T             fsync_report;
+    REPORT_LIBCAPI_T          sync_report;
+    REPORT_LIBCAPI_T          fstat_report;
+    REPORT_LIBCAPI_T          access_report;
+    REPORT_LIBCAPI_T          unlink_report;
+    REPORT_LIBCAPI_T          rename_report;
+    REPORT_FSINFO_T           fsinfo_report;
+}BENCH_REPORT_T;
+*/
+
+VOID sys_libc_gencsv(const CHAR *csvfilename, const CHAR *strMode)
+{
+    FILE* fp;
+    long i = 0;
+    long len = 0;
+    fp =  fopen(csvfilename,strMode);
+    if(fp == NULL){
+        printf("create file %s fail\n",csvfilename);
+    }
+    if(fopen_flag == 1){
+        len = MAX_FOPEN;
+    }else{
+        len = fopen_count;
+    }
+    //fopen
+    fprintf(fp,"fopen:,");
+    for(i = 0 ; i < len;i++)
+    {
+        if(i == len-1){
+            fprintf(fp,"%d",fopen_time[i]);
+        }else{
+            fprintf(fp,"%d,",fopen_time[i]);
+        }
+    }
+   
+    fprintf(fp,"\n");
+    //fread
+    if(fread_flag == 1){
+        len = MAX_FREAD;
+    }else{
+        len = fread_count;
+    }
+    fprintf(fp,"fread:,");
+    for(i = 0 ; i < len;i++)
+    {
+        if(i == len-1){
+            fprintf(fp,"%d",fread_time[i]);
+        }else{
+            fprintf(fp,"%d,",fread_time[i]);
+        }
+    }
+    fprintf(fp,"\n");
+   
+    //fwrite
+    if(fwrite_flag == 1){
+        len = MAX_FWRITE;
+    }else{
+        len = fwrite_count;
+    }
+    fprintf(fp,"fwrite:,");
+    for(i = 0 ; i < len;i++)
+    {
+        if(i == len-1){
+            fprintf(fp,"%d",fwrite_time[i]);
+        }else{
+            fprintf(fp,"%d,",fwrite_time[i]);
+        }
+    }
+    fprintf(fp,"\n");
+    //fsync_report
+    if(fsync_flag == 1){
+        len = MAX_FSYNC;
+    }else{
+        len = fsync_count;
+    }
+    fprintf(fp,"fflush:,");
+    for(i = 0 ; i < len;i++)
+    {
+        if(i == len-1){
+            fprintf(fp,"%d",fflush_time[i]);
+        }else{
+            fprintf(fp,"%d,",fflush_time[i]);
+        }
+    }
+    fprintf(fp,"\n");
+    fprintf(fp,"fileno:,");
+    for(i = 0 ; i < len;i++)
+    {
+        if(i == len-1){
+            fprintf(fp,"%d",fileno_time[i]);
+        }else{
+            fprintf(fp,"%d,",fileno_time[i]);
+        }
+    }
+    fprintf(fp,"\n");
+    fprintf(fp,"fsync:,");
+    for(i = 0 ; i < len;i++)
+    {
+         if(i == len-1){
+            fprintf(fp,"%d",fsync_time[i]);
+        }else{
+            fprintf(fp,"%d,",fsync_time[i]);
+        }
+    }
+    fprintf(fp,"\n");
+    //fclose
+    if(fclose_flag == 1){
+        len = MAX_FCLOSE;
+    }else{
+        len = fclose_count;
+    }
+    fprintf(fp,"fclose:,");
+    for(i = 0 ; i < len;i++)
+    {
+        if(i == len-1){
+            fprintf(fp,"%d",fclose_time[i]);
+        }else{
+            fprintf(fp,"%d,",fclose_time[i]);
+        }
+    }
+    fprintf(fp,"\n");
+    //fstat
+    if(fstat_flag == 1){
+        len = MAX_FSTAT;
+    }else{
+        len = fstat_count;
+    }
+    fprintf(fp,"fstat:,");
+    for(i = 0 ; i < len;i++)
+    {
+        if(i == len-1){
+            fprintf(fp,"%d",fstat_time[i]);
+        }else{
+            fprintf(fp,"%d,",fstat_time[i]);
+        }
+    }
+    fprintf(fp,"\n");
+    fclose(fp);
 }

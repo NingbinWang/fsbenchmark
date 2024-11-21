@@ -12,9 +12,10 @@ GID := $(shell id -g)
 OUTPUT_DIR= $(CURDIR)/output
 
 
-# cross host
-#TARGET_CROSS_HOST = ./../../prebuilts/gcc/linux-x86/aarch64/gcc-arm-10.3-2021.07-x86_64-aarch64-none-linux-gnu/bin/aarch64-none-linux-gnu
-TARGET_CROSS_HOST = aarch64-linux-gnu
+TARGET_CROSS_HOST =$(CROSS_COMPILE)
+
+
+
 export $(TARGET_CROSS_HOST)
 
 # rules
@@ -49,7 +50,6 @@ OBJS_CPP:= $(patsubst %.cpp, %.o, $(SRCS_CPP))
 OBJS_CC := $(patsubst %.cc, %.o,  $(SRCS_CC))
 OBJS_C  := $(patsubst %.c, %.o,  $(SRCS_C))
 
-CROSS_COMPILE=$(TARGET_CROSS_HOST)- 
 
 LD_C_FLAGS   +=  -ldl -lm -lpthread -lrt  -std=c99
 LD_CPP_FLAGS +=  -ldl -lm -lpthread -lrt  -lstdc++  #C++参数
@@ -60,7 +60,7 @@ checkenv:
 		mkdir $(OUTPUT_DIR); \
 	fi
 
-.PHONY: 
+.PHONY: all
 
 all: checkenv
 	$(CC) -o $(OUTPUT_DIR)/fsbench  $(INC_PATH)  $(SRCS_C) $(LD_C_FLAGS)

@@ -154,7 +154,9 @@ INT sys_posix_rmdir(const CHAR *strPath)
     }
     return iRet;
 }
-
+INT access_time[MAX_FILENUM] = {0};
+long access_count = 0;
+INT access_flag = 0;
 /**@fn         sys_posix_access
  * @brief      判断文件是否存在
  * @param[in]  strPath 路径
@@ -163,14 +165,47 @@ INT sys_posix_rmdir(const CHAR *strPath)
 INT sys_posix_access(const CHAR *strPath)
 {
     INT iRet = ERROR;
+     UINT64  start,end;
     if(!strPath)
     {
         return iRet;
     }
+    sys_time_get_msec(&start);
     iRet = access(strPath, F_OK);
+    sys_time_get_msec(&end);
+    access_time[access_count++]=(INT)(end-start);
+    if(access_count == MAX_FILENUM)
+    {
+           access_count = 0;
+           access_flag = 1;
+    }
     return iRet; 
 }
 
+VOID access_bench(REPORT_LIBCAPI_T* info)
+{
+    int i;
+    long len;
+    long sum;
+    if(access_flag)
+        len=MAX_SYNC;
+    else
+        len=access_count;
+    for(i = 0;i < len;i++)
+    {
+        sum += access_time[i];
+    }
+    sys_bubble_sort(access_time,len);
+    info->min = access_time[0];
+    info->max = access_time[len-1];
+    info->avg = sum/len;
+    info->count = len;
+    //printf("access min:%4dms,max:%4dms,avg:%4d\r\n",sync_time[0],sync_time[len],sum/len);
+}
+
+INT unlink_time[MAX_FILENUM] = {0};
+long unlink_count = 0;
+INT unlink_flag = 0;
 /**@fn         sys_posix_rm
  * @brief      删除
  * @param[in]  strPath 文件路径
@@ -179,6 +214,7 @@ INT sys_posix_access(const CHAR *strPath)
 INT sys_posix_rm(const CHAR *strPath)
 {
     INT iRet = ERROR;
+    UINT64  start,end;
     if(NULL == strPath)
     {
         return ERROR;
@@ -188,13 +224,42 @@ INT sys_posix_rm(const CHAR *strPath)
     {
         return OK;
     }
+    sys_time_get_msec(&start);
     iRet = unlink(strPath);
+    sys_time_get_msec(&end);
     if (iRet < 0)
     {
         printf("[%s] :error:%s iRet:%d \n",__FUNCTION__,strerror(errno),iRet);
         return iRet;
     }
+      unlink_time[unlink_count++]=(INT)(end-start);
+    if(unlink_count == MAX_FILENUM)
+    {
+           unlink_count = 0;
+           unlink_flag = 1;
+    }
 	return OK;
+}
+
+VOID unlink_bench(REPORT_LIBCAPI_T* info)
+{
+    int i;
+    long len;
+    long sum;
+    if(unlink_flag)
+        len=MAX_SYNC;
+    else
+        len=unlink_count;
+    for(i = 0;i < len;i++)
+    {
+        sum += unlink_time[i];
+    }
+    sys_bubble_sort(unlink_time,len);
+    info->min = unlink_time[0];
+    info->max = unlink_time[len-1];
+    info->avg = sum/len;
+    info->count = len;
+    //printf("access min:%4dms,max:%4dms,avg:%4d\r\n",sync_time[0],sync_time[len],sum/len);
 }
 
 
@@ -214,8 +279,8 @@ VOID sys_posix_sync(VOID)
     sync_time[sync_count++]=(INT)(end-start);
     if(sync_count == MAX_SYNC)
     {
-           sync_count = 1;
-           sync_flag = 0;
+           sync_count = 0;
+           sync_flag = 1;
     }
 }
 VOID sync_bench(REPORT_LIBCAPI_T* info)
@@ -239,7 +304,9 @@ VOID sync_bench(REPORT_LIBCAPI_T* info)
     //printf("sync min:%4dms,max:%4dms,avg:%4d\r\n",sync_time[0],sync_time[len],sum/len);
 }
 
-
+INT rename_time[MAX_FILENUM] = {0};
+long rename_count = 0;
+INT rename_flag = 0;
 /**@fn         sys_posix_rename
  * @brief      重命名文件
  * @param[in]  strOldPath 旧文件路径
@@ -249,18 +316,48 @@ VOID sync_bench(REPORT_LIBCAPI_T* info)
 INT sys_posix_rename(const CHAR *strOldPath, const CHAR *strNewPath)
 {
     INT iRet = ERROR;
+    UINT64  start,end;
+     
     if(NULL == strOldPath || NULL == strNewPath)
     {
         return ERROR;
     }
-
+    sys_time_get_msec(&start);
     iRet = rename(strOldPath, strNewPath);
+    sys_time_get_msec(&end);
     if (OK != iRet)
     {
         printf("strOldPath :%s :%s error \n",strOldPath, strNewPath);
     }
-    
+    rename_time[rename_count++]=(INT)(end-start);
+    if(rename_count == MAX_FILENUM)
+    {
+           rename_count = 0;
+           rename_flag = 1;
+    }
     return iRet;
+}
+
+
+VOID rename_bench(REPORT_LIBCAPI_T* info)
+{
+    int i;
+    long len;
+    long sum;
+    if(rename_flag)
+        len=MAX_FILENUM;
+    else
+        len=rename_count;
+    for(i = 0;i < len;i++)
+    {
+        sum += rename_time[i];
+    }
+    sys_bubble_sort(rename_time,len);
+    info->min = rename_time[0];
+    info->max = rename_time[len-1];
+    info->avg = sum/len;
+    info->count = len;
+   // printf("rename min:%4dms,max:%4dms,avg:%4d\r\n",sync_time[0],sync_time[len],sum/len);
 }
 
 /**@fn         sys_posix_fcntl
@@ -304,4 +401,82 @@ INT sys_posix_select(INT iFds, sys_fd_set *pStReadFdSet, sys_fd_set *pStWriteFdS
 INT sys_posix_get_last_errno()
 {
     return errno;
+}
+
+
+VOID sys_posix_gencsv(char* csvfilename,const CHAR *strMode)
+{
+    FILE* fp;
+    long i = 0;
+    long len = 0;
+    fp =  fopen(csvfilename,strMode);
+    if(fp == NULL){
+        printf("create file %s fail\n",csvfilename);
+    }
+    //access
+    if(access_flag == 1){
+        len = MAX_FILENUM;
+    }else{
+        len = access_count;
+    }
+    fprintf(fp,"access:,");
+    for(i = 0 ; i < len;i++)
+    {
+        if(i == len-1){
+            fprintf(fp,"%d",access_time[i]);
+        }else{
+            fprintf(fp,"%d,",access_time[i]);
+        }
+    }
+    fprintf(fp,"\n");
+    //unlink
+    if(unlink_flag == 1){
+        len = MAX_FILENUM;
+    }else{
+        len = unlink_count;
+    }
+    fprintf(fp,"unlink:,");
+    for(i = 0 ; i < len;i++)
+    {
+        if(i == len-1){
+            fprintf(fp,"%d",unlink_time[i]);
+        }else{
+            fprintf(fp,"%d,",unlink_time[i]);
+        }
+    }
+    fprintf(fp,"\n");
+    //sync
+    if(sync_flag == 1){
+        len = MAX_SYNC;
+    }else{
+        len = sync_count;
+    }
+    fprintf(fp,"sync:,");
+    for(i = 0 ; i < len;i++)
+    {
+        if(i == len-1){
+            fprintf(fp,"%d",sync_time[i]);
+        }else{
+            fprintf(fp,"%d,",sync_time[i]);
+        }
+    }
+    fprintf(fp,"\n");
+    //rename
+    if(rename_flag == 1){
+        len = MAX_FILENUM;
+    }else{
+        len = rename_count;
+    }
+    fprintf(fp,"rename:,");
+    for(i = 0 ; i < len;i++)
+    {
+        if(i == len-1){
+            fprintf(fp,"%d",rename_time[i]);
+        }else{
+            fprintf(fp,"%d,",rename_time[i]);
+        }
+    }
+    fprintf(fp,"\n");
+    fclose(fp);
+
 }

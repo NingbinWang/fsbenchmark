@@ -106,6 +106,8 @@ VOID fstat_bench(REPORT_LIBCAPI_T* info);
 
 INT sys_file_read_dir_file(const CHAR *strDir, VOID *pUserParam, ReadFileCallBack pCallBack,REPORT_FSINFO_T *fsinfo);
 
+VOID sys_libc_gencsv(const CHAR *csvfilename, const CHAR *strMode);
+
 
 
 #endif

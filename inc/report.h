@@ -2,7 +2,6 @@
 #define _REPORT_H_
 
 #include "sys_common.h"
-
 #define MAX_FOPEN    64*1024
 #define MAX_FCLOSE   64*1024
 
@@ -11,10 +10,8 @@
 #define MAX_FSYNC   64*1024
 #define MAX_FSTAT   64*1024
 #define MAX_SYNC    64*1024
-
-#define MAXPREFILESIZE      270 //SIZE:1MB every file max size
-#define PERWR_SIZE          256 //SIZE:1KB every time use write or read
-
+//#define MAX_RENAME  20000
+#define MAX_FILENUM 20000
 
 
 
@@ -60,6 +57,9 @@ typedef struct
     REPORT_SYNC_T             fsync_report;
     REPORT_LIBCAPI_T          sync_report;
     REPORT_LIBCAPI_T          fstat_report;
+    REPORT_LIBCAPI_T          access_report;
+    REPORT_LIBCAPI_T          unlink_report;
+    REPORT_LIBCAPI_T          rename_report;
     REPORT_FSINFO_T           fsinfo_report;
 }BENCH_REPORT_T;
 

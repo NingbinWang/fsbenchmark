@@ -93,6 +93,7 @@ INT sys_posix_mkdir(const CHAR *strPath);
  */
 INT sys_posix_rmdir(const CHAR *strPath);
 
+VOID unlink_bench(REPORT_LIBCAPI_T* info);
 /**@fn         sys_posix_rm
  * @brief      删除
  * @param[in]  strPath 文件路径
@@ -111,6 +112,8 @@ VOID sync_bench(REPORT_LIBCAPI_T* info);
  */
 VOID sys_posix_sync(VOID);
 
+VOID rename_bench(REPORT_LIBCAPI_T* info);
+
 /**@fn         sys_posix_rename
  * @brief      重命名文件
  * @param[in]  strOldPath 旧文件路径
@@ -119,6 +122,9 @@ VOID sys_posix_sync(VOID);
  */
 INT sys_posix_rename(const CHAR *strOldPath, const CHAR *strNewPath);
 
+
+
+VOID access_bench(REPORT_LIBCAPI_T* info);
 /**@fn         sys_posix_access
  * @brief      判断文件是否存在
  * @param[in]  strPath 路径
@@ -156,6 +162,8 @@ INT sys_posix_select(INT iFds, sys_fd_set *pStReadFdSet, sys_fd_set *pStWriteFdS
  * @return     详见errno 
  */
 INT sys_posix_get_last_errno();
+
+VOID sys_posix_gencsv(char* csvfilename,const CHAR *strMode);
 
 #ifdef __cplusplus
 }
