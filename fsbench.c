@@ -19,7 +19,7 @@
 #include "sys_pthread.h"
 #include  "report.h"
 
-#define FSBENCH_VERSION     "1.0.5"
+#define FSBENCH_VERSION     "1.0.6"
 #define MOUNT_PATH          "/tmp/mmc03"
 #define RANDOM_PATH         "/dev/urandom"
 
@@ -253,13 +253,15 @@ int main(int argc, char *const argv[])
     }
     //if it have only 1/10 total size , must mkfs it.
 //step3  alloction
-   printf("thread number = %d prefilesize = %dMB rwtest size=%dKB\n",jobs_num,filesize,rwsize);
-   prejobsize = fsinfo.uRemainSize/jobs_num;
-   printf("prejob size = %dMB\n",prejobsize);
-   prejobfilenum = prejobsize/filesize;
-   printf("prejob filenum = %d\n",prejobfilenum);
+    if(jobs_num > 0){ 
+       printf("thread number = %d prefilesize = %dMB rwtest size=%dKB\n",jobs_num,filesize,rwsize);
+       prejobsize = fsinfo.uRemainSize/jobs_num;
+       printf("prejob size = %dMB\n",prejobsize);
+       prejobfilenum = prejobsize/filesize;
+       printf("prejob filenum = %d\n",prejobfilenum);
+    }
 //step4 create pthread to create file and write file then read file 
-   if(nobypass)
+   if(nobypass && (jobs_num > 0))
    {
       for(i = 0 ;i < jobs_num;i++)
       {

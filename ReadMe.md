@@ -3,13 +3,13 @@
 
 # Getting Started Quickly
 
-请修改Makefile中的TARGET_CROSS_HOST，指定交叉编译链
+> make all CROSS_COMPILE=XXXX
 
-> make all
+CROSS_COMPILE=交叉编译链，如果不放，就是直接用gcc
 
 在output下产生fsbench
 
-注意目前已经验证的文件系统：vfat 
+
 
 命令：
 
