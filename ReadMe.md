@@ -3,13 +3,13 @@
 
 # Getting Started Quickly
 
-> make all CROSS_COMPILE=XXXX
+请修改Makefile中的TARGET_CROSS_HOST，指定交叉编译链
 
-CROSS_COMPILE=交叉编译链，如果不放，就是直接用gcc
+> make all
 
 在output下产生fsbench
 
-
+注意目前已经验证的文件系统：vfat 
 
 命令：
 
@@ -31,6 +31,12 @@ CROSS_COMPILE=交叉编译链，如果不放，就是直接用gcc
 * -s | --prerwsize [arg] perrwsize(/KB); like 512  perfile size    每次读写的最大的size
 * -f | --outfile [arg] csvfilename; like fsbench.csv 输出整个测试过程中的相应的实时数据
 
+举例：
+
+```
+  ./fsbench -d /dev/mmcblk0p1 -t
+```
+
 ## 修改测试记录数据的大小
 
 目前测试数据主要在inc/report.h中记录：
@@ -51,6 +57,7 @@ CROSS_COMPILE=交叉编译链，如果不放，就是直接用gcc
 
 ## 目前测试的API有
 
+### libc
 * mount
 * statfs
 * fopen
@@ -65,6 +72,10 @@ CROSS_COMPILE=交叉编译链，如果不放，就是直接用gcc
 * sync
 * unlink
 
+### unix
+* open
+* read
+* write
 
 # TODO
 1. 线程变成乱序方式写入(完成)

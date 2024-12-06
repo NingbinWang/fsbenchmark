@@ -12,10 +12,8 @@ GID := $(shell id -g)
 OUTPUT_DIR= $(CURDIR)/output
 
 
-TARGET_CROSS_HOST =$(CROSS_COMPILE)
-
-
-
+# cross host
+TARGET_CROSS_HOST = $(CROSS_COMPILE)
 export $(TARGET_CROSS_HOST)
 
 # rules

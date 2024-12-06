@@ -19,8 +19,8 @@
 #include "sys_pthread.h"
 #include  "report.h"
 
-#define FSBENCH_VERSION     "1.0.6"
-#define MOUNT_PATH          "/tmp/mmc03"
+#define FSBENCH_VERSION     "1.0.7"
+#define MOUNT_PATH          "/tmp/testmmc"
 #define RANDOM_PATH         "/dev/urandom"
 
 
@@ -72,6 +72,7 @@ void Testlibc_func(THEAD_PARAM_T* param)
 
 void rename_test(char* filename,SYS_FS_STAT_T stat,VOID *pUserParam)
 {
+
     if(strstr(filename,"test")!= NULL){
        char newfilename[256];
        sprintf(newfilename,"%s_rename",filename);
@@ -206,16 +207,15 @@ int main(int argc, char *const argv[])
                     break;
                 case 's':
                     rwsize  = strtoull(optarg, NULL, 0);
-                    if (rwsize < 1 || rwsize > 5120)
+                    if (rwsize < 1 || rwsize > 1024)
                     {
                         printf("args filesize error %d.\n", filesize);
                         return usage();
-                    }  
+                    }
                     break;
                 case 'f':
                     csvfilename = optarg;
                     break;
-
                 case 'h':
                 default:
                     printf("c[0x%x]\n", c);
@@ -253,16 +253,23 @@ int main(int argc, char *const argv[])
     }
     //if it have only 1/10 total size , must mkfs it.
 //step3  alloction
-    if(jobs_num > 0){ 
-       printf("thread number = %d prefilesize = %dMB rwtest size=%dKB\n",jobs_num,filesize,rwsize);
-       prejobsize = fsinfo.uRemainSize/jobs_num;
-       printf("prejob size = %dMB\n",prejobsize);
-       prejobfilenum = prejobsize/filesize;
-       printf("prejob filenum = %d\n",prejobfilenum);
-    }
+   if(jobs_num != 0){
+        printf("thread number = %d prefilesize = %dMB rwtest size=%dKB\n",jobs_num,filesize,rwsize);
+        prejobsize = fsinfo.uRemainSize/jobs_num;
+        printf("prejob size = %dMB\n",prejobsize);
+        prejobfilenum = prejobsize/filesize;
+        printf("prejob filenum = %d\n",prejobfilenum);
+        if(prejobfilenum == 0)
+        {
+            printf("no file can be wirten\n");
+            return 0;
+        }
+   }
+  
 //step4 create pthread to create file and write file then read file 
-   if(nobypass && (jobs_num > 0))
+   if( (nobypass) && (jobs_num != 0))
    {
+      int count = 0;
       for(i = 0 ;i < jobs_num;i++)
       {
             char taskname[128];
@@ -278,22 +285,23 @@ int main(int argc, char *const argv[])
       {
          sys_pthread_join(taskid[i]);
       }
- 
-      int count = 0;
+     //wait for every job finish
       while(1)
       {
-        if(flag[count++] == 0)
+        if(flag[count] == 0)
          {
             count = 0;
             continue;
         }
         if(count == (jobs_num-1))
-        break;
+            break;
+        count++;
+        usleep(100);
       }
       //step5 readdir every file
       printf("start rename test............\n");
       sys_file_read_dir_file(MOUNT_PATH,(void *)devname,rename_test,&(report.fsinfo_report));
-      if (devname != NULL){
+      if (devname != NULL && csvfilename != NULL){
           sys_libc_gencsv(csvfilename,"w+");//初始数据
           sys_posix_gencsv(csvfilename,"a+");//posix初始数据
       }

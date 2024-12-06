@@ -1,5 +1,5 @@
 #include "sys_libc_priv.h"
-INT fopen_time[MAX_FOPEN] = {0};
+INT fopen_time[MAX_FOPEN] = {-1};
 long fopen_count = 0;
 INT fopen_flag = 0;
 /**@fn        sys_libc_fopen    
@@ -59,7 +59,7 @@ VOID fopen_bench(REPORT_LIBCAPI_T* info)
 }
 
 
-INT fclose_time[MAX_FCLOSE] = {0};
+INT fclose_time[MAX_FCLOSE] = {-1};
 long fclose_count = 0;
 INT fclose_flag = 0;
 /**@fn         sys_libc_fclose
@@ -131,7 +131,7 @@ INT sys_file_feof(FILE_ID *pFileID)
 	return feof((FILE *)pFileID);
 }
 
-INT fread_time[MAX_FREAD] = {0};
+INT fread_time[MAX_FREAD] = {-1};
 long fread_count = 0;
 INT fread_flag = 0;
 
@@ -197,7 +197,7 @@ VOID fread_bench(REPORT_LIBCAPI_T* info)
     //printf("fread min:%4dms,max:%4dms,avg:%4d\r\n",fread_time[0],fread_time[len],sum/len);
 }
 
-INT fwrite_time[MAX_FWRITE] = {0};
+INT fwrite_time[MAX_FWRITE] = {-1};
 long fwrite_count = 0;
 INT fwrite_flag = 0;
 
@@ -256,9 +256,9 @@ VOID fwrite_bench(REPORT_LIBCAPI_T* info)
 }
 
 
-INT fflush_time[MAX_FSYNC] = {0};
-INT fileno_time[MAX_FSYNC] = {0};
-INT fsync_time[MAX_FSYNC] = {0};
+INT fflush_time[MAX_FSYNC] = {-1};
+INT fileno_time[MAX_FSYNC] = {-1};
+INT fsync_time[MAX_FSYNC] = {-1};
 long fsync_count = 0;
 INT fsync_flag = 0;
 
@@ -392,7 +392,7 @@ LONG sys_libc_ftell(FILE_ID *pFileID)
     }
 	return iRet;
 }
-INT fstat_time[MAX_FSTAT] = {0};
+INT fstat_time[MAX_FSTAT] = {-1};
 long fstat_count = 0;
 INT fstat_flag = 0;
 /**@fn         sys_file_fstat    
@@ -405,7 +405,7 @@ INT sys_file_fstat(const CHAR *strPath, SYS_FS_STAT_T *pStSate)
 {
     INT iRet = ERROR;
     UINT64  start,end;
-    struct stat stState = {0};
+    struct stat stState = {-1};
     if(NULL == strPath || NULL == pStSate)
     {
         return ERROR;
@@ -474,7 +474,7 @@ INT sys_file_read_dir(const CHAR *strDir, VOID *pUserParam, ReadDirCallBack pCal
     INT iRet = ERROR;
     DIR *pDir = NULL ;
     struct dirent *pDirRent = NULL;
-    CHAR strDirPath[512] = {0};
+    CHAR strDirPath[512] = {-1};
     if(!strDir || !pUserParam || !pCallBack)
     {
         printf("invaild param :%p %p %p\n",strDir,pUserParam,pCallBack);
@@ -519,8 +519,8 @@ INT sys_file_read_dir_file(const CHAR *strDir, VOID *pUserParam, ReadFileCallBac
     DIR *pDir = NULL ;
     struct dirent *pDirRent = NULL;
     UINT64  start,end;
-    CHAR strFilePath[512] = {0};
-    SYS_FS_STAT_T stStatBuf = {0};
+    CHAR strFilePath[512] = {-1};
+    SYS_FS_STAT_T stStatBuf = {-1};
     if(!strDir || !pUserParam || !pCallBack)
     {
         return iRet;

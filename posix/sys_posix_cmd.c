@@ -154,7 +154,7 @@ INT sys_posix_rmdir(const CHAR *strPath)
     }
     return iRet;
 }
-INT access_time[MAX_FILENUM] = {0};
+INT access_time[MAX_FILENUM] = {-1};
 long access_count = 0;
 INT access_flag = 0;
 /**@fn         sys_posix_access
@@ -195,6 +195,8 @@ VOID access_bench(REPORT_LIBCAPI_T* info)
     {
         sum += access_time[i];
     }
+    if(len < 2)
+      return;
     sys_bubble_sort(access_time,len);
     info->min = access_time[0];
     info->max = access_time[len-1];
@@ -203,7 +205,7 @@ VOID access_bench(REPORT_LIBCAPI_T* info)
     //printf("access min:%4dms,max:%4dms,avg:%4d\r\n",sync_time[0],sync_time[len],sum/len);
 }
 
-INT unlink_time[MAX_FILENUM] = {0};
+INT unlink_time[MAX_FILENUM] = {-1};
 long unlink_count = 0;
 INT unlink_flag = 0;
 /**@fn         sys_posix_rm
@@ -250,6 +252,8 @@ VOID unlink_bench(REPORT_LIBCAPI_T* info)
         len=MAX_SYNC;
     else
         len=unlink_count;
+    if(len < 2)
+      return;
     for(i = 0;i < len;i++)
     {
         sum += unlink_time[i];
@@ -263,7 +267,7 @@ VOID unlink_bench(REPORT_LIBCAPI_T* info)
 }
 
 
-INT sync_time[MAX_SYNC] = {0};
+INT sync_time[MAX_SYNC] = {-1};
 INT sync_count = 0;
 INT sync_flag = 0;
 /**@fn          sys_posix_sync      
@@ -292,6 +296,8 @@ VOID sync_bench(REPORT_LIBCAPI_T* info)
         len=MAX_SYNC;
     else
         len=sync_count;
+    if(len < 2)
+      return;
     for(i = 0;i < len;i++)
     {
         sum += sync_time[i];
@@ -304,7 +310,7 @@ VOID sync_bench(REPORT_LIBCAPI_T* info)
     //printf("sync min:%4dms,max:%4dms,avg:%4d\r\n",sync_time[0],sync_time[len],sum/len);
 }
 
-INT rename_time[MAX_FILENUM] = {0};
+INT rename_time[MAX_FILENUM] = {-1};
 long rename_count = 0;
 INT rename_flag = 0;
 /**@fn         sys_posix_rename
@@ -342,8 +348,8 @@ INT sys_posix_rename(const CHAR *strOldPath, const CHAR *strNewPath)
 VOID rename_bench(REPORT_LIBCAPI_T* info)
 {
     int i;
-    long len;
-    long sum;
+    long len = 0;
+    long sum = 0;
     if(rename_flag)
         len=MAX_FILENUM;
     else
@@ -352,12 +358,14 @@ VOID rename_bench(REPORT_LIBCAPI_T* info)
     {
         sum += rename_time[i];
     }
+    if(len < 2)
+      return;
     sys_bubble_sort(rename_time,len);
     info->min = rename_time[0];
     info->max = rename_time[len-1];
     info->avg = sum/len;
     info->count = len;
-   // printf("rename min:%4dms,max:%4dms,avg:%4d\r\n",sync_time[0],sync_time[len],sum/len);
+    //printf("rename sum = %d len = %d min:%4dms,max:%4dms,avg:%4d\r\n",sum,len,rename_time[0],rename_time[len],sum/len);
 }
 
 /**@fn         sys_posix_fcntl
